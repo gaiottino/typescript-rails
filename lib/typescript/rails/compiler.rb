@@ -8,16 +8,13 @@ module Typescript::Rails::Compiler
       relative_path = ts_path.gsub(path, '')
       js_path = File.join(Rails.root, 'tmp', 'typescript_rails', relative_path).gsub('.ts', '.js')
 
-      if File.exist?(js_path) && File.mtime(js_path) > File.mtime(ts_path)
+      command = "/usr/local/bin/tsc --target ES5 --module system --moduleResolution node --emitDecoratorMetadata --experimentalDecorators --rootDir #{path} --outFile #{js_path} #{ts_path}"
+      Rails.logger.info "Typescript::Rails::Compiler #{command}"
+      stdout, stderr, exit_status = Open3.capture3(command)
+      if exit_status == 0
         File.open(js_path, 'r').read
       else
-        Rails.logger.debug 'Typescript::Rails::Compiler will compile all .ts files.'
-        stdout, stderr, exit_status = Open3.capture3('/usr/local/bin/tsc -w')
-        if exit_status == 0
-          File.open(js_path, 'r').read
-        else
-          raise stderr + stdout
-        end
+        raise stderr + stdout
       end
     end
   end
