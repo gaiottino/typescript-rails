@@ -8,7 +8,6 @@ module Typescript::Rails::Compiler
     def compile(ts_path, source, context, *options)
       dependencies = dependencies_for(ts_path, source)
       dependencies.each { |dep| context.depend_on(dep) }
-      Rails.logger.ap dependencies
 
       path = File.join(Rails.root.to_s, 'app', 'assets', 'typescripts')
       relative_path = ts_path.gsub(path, '')
