@@ -2,8 +2,14 @@ require 'open3'
 require 'typescript/rails'
 
 module Typescript::Rails::Compiler
+  IMPORT_REGEX = /import\s+\{.*\}\s+from\s+'(.*)'/
+
   class << self
-    def compile(ts_path, source, context=nil, *options)
+    def compile(ts_path, source, context, *options)
+      dependencies = dependencies_for(ts_path, source)
+      dependencies.each { |dep| context.depend_on(dep) }
+      Rails.logger.ap dependencies
+
       path = File.join(Rails.root.to_s, 'app', 'assets', 'typescripts')
       relative_path = ts_path.gsub(path, '')
       js_path = File.join(Rails.root, 'tmp', 'typescript_rails', relative_path).gsub('.ts', '.js')
@@ -16,6 +22,24 @@ module Typescript::Rails::Compiler
       else
         raise stderr + stdout
       end
+    end
+
+    def dependencies_for(ts_path, source)
+      dirname = File.dirname(ts_path)
+
+      full_dep_paths = []
+      dependencies = source.scan(IMPORT_REGEX).flatten.select { |path| path.starts_with?('./') || path.starts_with?('../') }
+      dependencies.each do |dep|
+        dep_path = File.expand_path("#{dep}.ts", dirname)
+        full_dep_paths << dep_path
+
+        dep_dirname = File.dirname(dep_path)
+        dep_source = File.open(dep_path).read
+        if dep_source =~ IMPORT_REGEX
+          full_dep_paths.concat(dependencies_for(dep_path, dep_source))
+        end
+      end
+      full_dep_paths.uniq
     end
   end
 end
