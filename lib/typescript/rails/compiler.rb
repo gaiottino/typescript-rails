@@ -30,12 +30,13 @@ module Typescript::Rails::Compiler
       dependencies = source.scan(IMPORT_REGEX).flatten.select { |path| path.starts_with?('./') || path.starts_with?('../') }
       dependencies.each do |dep|
         dep_path = File.expand_path("#{dep}.ts", dirname)
-        full_dep_paths << dep_path
+        if File.exists?(dep_path)
+          full_dep_paths << dep_path
 
-        dep_dirname = File.dirname(dep_path)
-        dep_source = File.open(dep_path).read
-        if dep_source =~ IMPORT_REGEX
-          full_dep_paths.concat(dependencies_for(dep_path, dep_source))
+          dep_source = File.open(dep_path).read
+          if dep_source =~ IMPORT_REGEX
+            full_dep_paths.concat(dependencies_for(dep_path, dep_source))
+          end
         end
       end
       full_dep_paths.uniq
