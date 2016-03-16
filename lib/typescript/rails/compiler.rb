@@ -2,7 +2,7 @@ require 'open3'
 require 'typescript/rails'
 
 module Typescript::Rails::Compiler
-  IMPORT_REGEX = /import\s+\{.*\}\s+from\s+'(.*)'/
+  IMPORT_REGEX = /[import|export]\s+\{.*\}\s+from\s+'(.*)'/
 
   class << self
     def compile(ts_path, source, context, *options)
