@@ -6,7 +6,8 @@ module Typescript::Rails::Compiler
 
   class << self
     def compile(ts_path, source, context, *options)
-      dependencies = dependencies_for(ts_path, source)
+      dependencies = Set.new
+      dependencies_for(dependencies, ts_path, source)
       dependencies.each { |dep| context.depend_on(dep) }
 
       path = File.join(Rails.root.to_s, 'app', 'assets', 'typescripts')
@@ -23,23 +24,23 @@ module Typescript::Rails::Compiler
       end
     end
 
-    def dependencies_for(ts_path, source)
+    def dependencies_for(full_dep_paths, ts_path, source)
       dirname = File.dirname(ts_path)
 
-      full_dep_paths = []
       dependencies = source.scan(IMPORT_REGEX).flatten.select { |path| path.starts_with?('./') || path.starts_with?('../') }
       dependencies.each do |dep|
         dep_path = File.expand_path("#{dep}.ts", dirname)
+        next if full_dep_paths.include?(dep_path)
+
         if File.exists?(dep_path)
           full_dep_paths << dep_path
 
           dep_source = File.open(dep_path).read
           if dep_source =~ IMPORT_REGEX
-            full_dep_paths.concat(dependencies_for(dep_path, dep_source))
+            dependencies_for(full_dep_paths, dep_path, dep_source)
           end
         end
       end
-      full_dep_paths.uniq
     end
   end
 end
