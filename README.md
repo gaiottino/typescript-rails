@@ -24,7 +24,7 @@ Just add a `.ts` file in your `app/assets/typescripts` directory and include it 
 Configurations:
 
 ```
-# Its defaults are `--target ES5 --module system --moduleResolution node --experimentalDecorators --emitDecoratorMetadata`.
+# Its defaults are `--target ES5 --module system --moduleResolution node --sourceMap --experimentalDecorators --emitDecoratorMetadata`.
 
 Typescript::Rails::Compiler.default_options = [ ... ]
 ```

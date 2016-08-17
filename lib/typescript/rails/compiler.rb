@@ -14,7 +14,7 @@ module Typescript::Rails::Compiler
       relative_path = ts_path.gsub(path, '')
       js_path = File.join(Rails.root, 'tmp', 'typescript_rails', relative_path).gsub('.ts', '.js')
 
-      command = "#{File.join(Rails.root, 'node_modules', 'typescript', 'bin', 'tsc')} --target ES5 --module system --moduleResolution node --emitDecoratorMetadata --experimentalDecorators --rootDir #{path} --outFile #{js_path} #{ts_path}"
+      command = "#{File.join(Rails.root, 'node_modules', 'typescript', 'bin', 'tsc')} --target ES5 --module system --moduleResolution node --sourceMap --emitDecoratorMetadata --experimentalDecorators --rootDir #{path} --outFile #{js_path} #{ts_path}"
       Rails.logger.info "Typescript::Rails::Compiler #{command}"
       stdout, stderr, exit_status = Open3.capture3(command)
       if exit_status == 0
